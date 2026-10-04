@@ -15,6 +15,7 @@ type CartState = {
   setQuantity: (key: string, quantity: number) => void;
   removeItem: (key: string) => void;
   clear: () => void;
+  clampToStock: () => void;
 };
 
 const maxQuantityFor = (item: CartItem): number => {
@@ -50,10 +51,15 @@ export const useCartStore = create<CartState>()(
 
       setQuantity: (key, quantity) =>
         set((state) => ({
-          items: state.items.map((candidate) => {
-            if (cartItemKey(candidate) !== key) return candidate;
+          items: state.items.flatMap((candidate) => {
+            if (cartItemKey(candidate) !== key) return [candidate];
+
             const max = maxQuantityFor(candidate);
-            return { ...candidate, quantity: Math.max(0, Math.min(quantity, max)) };
+            // Stock ran out for this variant: drop the line instead of keeping an
+            // unbuyable quantity in the cart.
+            if (max <= 0) return [];
+
+            return [{ ...candidate, quantity: Math.max(1, Math.min(quantity, max)) }];
           }),
         })),
 
@@ -63,6 +69,23 @@ export const useCartStore = create<CartState>()(
         })),
 
       clear: () => set({ items: [] }),
+
+      /** Safety net for quantities stored before a stock change. */
+      clampToStock: () =>
+        set((state) => {
+          const items = state.items.flatMap((candidate) => {
+            const max = maxQuantityFor(candidate);
+            if (max <= 0) return [];
+            if (candidate.quantity <= max) return [candidate];
+            return [{ ...candidate, quantity: max }];
+          });
+
+          const unchanged =
+            items.length === state.items.length &&
+            items.every((candidate, index) => candidate.quantity === state.items[index].quantity);
+
+          return unchanged ? state : { items };
+        }),
     }),
     {
       name: STORAGE_KEYS.cart,

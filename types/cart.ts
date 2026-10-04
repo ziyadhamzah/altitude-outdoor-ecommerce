@@ -16,3 +16,13 @@ export type CartLine = {
   lineTotal: number;
   maxQuantity: number;
 };
+
+/** A stored item whose product is no longer in the catalog. */
+export type UnavailableCartItem = {
+  key: string;
+  item: CartItem;
+};
+
+export type CartEntry =
+  | ({ kind: 'available' } & CartLine)
+  | ({ kind: 'unavailable' } & UnavailableCartItem);
