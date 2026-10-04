@@ -24,6 +24,11 @@ export const products: Product[] = [
     ],
     variantStock: { 'Color: Black': 9, 'Color: Olive': 6, 'Color: Sand': 3 },
     material: 'Recycled 210D nylon face, PFC-free DWR',
+    features: [
+      'Fully taped seams hold sustained rain without wetting through',
+      'Helmet-compatible hood that holds its shape in wind',
+      'Two-way pit zips dump heat fast on the climb',
+    ],
     specs: [
       { label: 'Weight', value: '480 g (size M)' },
       { label: 'Water column', value: '20.000 mm' },
@@ -53,6 +58,11 @@ export const products: Product[] = [
     ],
     variantStock: { 'Color: Graphite': 0, 'Color: Rust': 0 },
     material: '10D ripstop nylon with wind-blocking coating',
+    features: [
+      'Weighs 94 g and folds into its own chest pocket',
+      'Single drawcord seals cuffs, hem and collar against gusts',
+      'Built for wind, not rain — it layers under a shell',
+    ],
     specs: [
       { label: 'Weight', value: '94 g (size M)' },
       { label: 'Wind resistance', value: '40 km/h sustained' },
@@ -81,6 +91,11 @@ export const products: Product[] = [
     ],
     variantStock: { 'Color: Black': 14, 'Color: Slate': 8, 'Color: Khaki': 4 },
     material: '92% recycled nylon, 8% elastane ripstop',
+    features: [
+      'Four-way stretch follows knees and hips on steep ground',
+      'Reinforced seat and knee panels take abrasion from rock scrambles',
+      'Zip pockets keep keys and phone secure while moving',
+    ],
     specs: [
       { label: 'Weight', value: '310 g (size 32)' },
       { label: 'Fabric', value: '4-way stretch ripstop' },
@@ -109,6 +124,11 @@ export const products: Product[] = [
     ],
     variantStock: { 'Color: Charcoal': 10, 'Color: Oat': 7, 'Color: Forest': 5 },
     material: 'Recycled polyester grid fleece, 320 g/m²',
+    features: [
+      'Grid fleece moves moisture off the skin and dries between climbs',
+      'Low bulk for a mid layer that packs into a jacket pocket',
+      'Flatlock seams stay comfortable under a shell',
+    ],
     specs: [
       { label: 'Weight', value: '395 g (size M)' },
       { label: 'Fabric', value: 'Grid fleece, 320 g/m²' },
@@ -137,6 +157,11 @@ export const products: Product[] = [
     ],
     variantStock: { 'Color: Black': 6, 'Color: Olive': 3 },
     material: 'Recycled 420D ripstop nylon, TPU-coated base',
+    features: [
+      'Frameless sheet carries a full overnight load without rattling the wearer',
+      'Adjustable back length fits 38–52 cm torsos',
+      'Rain cover rolls into the base pocket and doubles as agroundsheet',
+    ],
     specs: [
       { label: 'Capacity', value: '30 L (38 L option available)' },
       { label: 'Weight', value: '1.240 g' },
@@ -163,6 +188,11 @@ export const products: Product[] = [
     variants: [{ name: 'Color', options: ['Black', 'Sand', 'Forest'] }],
     variantStock: { 'Color: Black': 9, 'Color: Sand': 4, 'Color: Forest': 2 },
     material: 'Recycled 300D nylon with TPU laminate',
+    features: [
+      '18 L of usable volume for layers, lunch and a mid-layer',
+      'Breathable back panel vents heat on fast ascents',
+      'Two-way zips open the pack flat for boarding and washing',
+    ],
     specs: [
       { label: 'Capacity', value: '18 L' },
       { label: 'Weight', value: '610 g' },
@@ -189,6 +219,11 @@ export const products: Product[] = [
     variants: [{ name: 'Color', options: ['Black', 'Olive'] }],
     variantStock: { 'Color: Black': 13, 'Color: Olive': 9 },
     material: 'Recycled 210D ripstop nylon',
+    features: [
+      'Sits close to the body so it does not swing on steep ground',
+      'Zip pocket holds a phone, keys and a folded map',
+      'Adjustable webbing works over a jacket or a harness',
+    ],
     specs: [
       { label: 'Capacity', value: '4 L' },
       { label: 'Weight', value: '180 g' },
@@ -224,6 +259,11 @@ export const products: Product[] = [
       'Size: 44': 0,
     },
     material: '1.8 mm nubuck leather and recycled mesh',
+    features: [
+      'Sticky rubber lugs bite into wet rock and loose scree',
+      'Nubuck leather creases with the foot instead of cracking',
+      'Wide toe box leaves room for thick socks on long days',
+    ],
     specs: [
       { label: 'Upper', value: 'Nubuck leather + recycled mesh' },
       { label: 'Outsole', value: 'Vibram® Megagrip, 5 mm lugs' },
@@ -260,6 +300,11 @@ export const products: Product[] = [
       'Size: 44': 0,
     },
     material: 'Recycled ripstop mesh with welded overlays',
+    features: [
+      'Welded mesh upper drains water in seconds after a downpour',
+      'Rock plate at the forefoot protects against sharp trail debris',
+      'At 310 g per shoe it stays light over rough ground',
+    ],
     specs: [
       { label: 'Upper', value: 'Recycled ripstop mesh' },
       { label: 'Outsole', value: 'Rubber, 3 mm lugs' },
@@ -286,6 +331,11 @@ export const products: Product[] = [
     variants: [{ name: 'Color', options: ['Steel', 'Black', 'Bronze'] }],
     variantStock: { 'Color: Steel': 18, 'Color: Black': 14, 'Color: Bronze': 8 },
     material: '18/8 stainless steel, powder-coated',
+    features: [
+      'Holds cold for 24 hours and hot for 12',
+      'Single-wall vacuum body survives being dropped on rock',
+      'Wide mouth fits ice cubes and a bottle brush',
+    ],
     specs: [
       { label: 'Capacity', value: '1.000 ml' },
       { label: 'Weight', value: '385 g' },
@@ -311,6 +361,11 @@ export const products: Product[] = [
     variants: [{ name: 'Color', options: ['Black', 'Olive', 'Sand'] }],
     variantStock: { 'Color: Black': 2, 'Color: Olive': 1, 'Color: Sand': 1 },
     material: 'Recycled wicking twill with mesh panels',
+    features: [
+      'Five-panel construction keeps the brim stable in gusts',
+      'Mesh side panels vent heat on exposed ridgelines',
+      'Sweatband absorbs salt and can be washed out',
+    ],
     specs: [
       { label: 'Weight', value: '78 g' },
       { label: 'Panels', value: '5, unstructured front' },
@@ -335,6 +390,11 @@ export const products: Product[] = [
     reviews: 129,
     variants: [{ name: 'Color', options: ['Black'] }],
     material: 'Aluminium body with elastomer over-mould',
+    features: [
+      '430 lumens with a red night mode that keeps night vision intact',
+      'Flood and beam modes switch with a single press',
+      'Runs 6 hours on high, 60 hours on eco',
+    ],
     specs: [
       { label: 'Output', value: '600 lm max, 3 modes' },
       { label: 'Burn time', value: '4 h high / 40 h low' },
@@ -363,6 +423,11 @@ export const products: Product[] = [
     ],
     variantStock: { 'Size: 110 cm': 4, 'Size: 120 cm': 4, 'Size: 130 cm': 2 },
     material: 'Carbon fibre shaft, cork grip, aluminium lock',
+    features: [
+      'Cork grips shape to the hand and reduce blister hotspots',
+      'Carbon shafts damp vibration on hard stone',
+      'Twist locks adjust fast with gloves on',
+    ],
     specs: [
       { label: 'Adjustment', value: '110 / 120 / 130 cm, three-section' },
       { label: 'Weight', value: '486 g per pair' },
@@ -388,6 +453,11 @@ export const products: Product[] = [
     variants: [{ name: 'Color', options: ['Black', 'Olive', 'Sand'] }],
     variantStock: { 'Color: Black': 12, 'Color: Olive': 9, 'Color: Sand': 5 },
     material: 'Recycled 500D Cordura®, DWR finish',
+    features: [
+      'Keeps gear separated when a tent bag will not',
+      'Buckles take a beating and can be swapped in the field',
+      'DWR finish sheds light rain without weighing much',
+    ],
     specs: [
       { label: 'Size', value: '22 × 14 × 5 cm' },
       { label: 'Weight', value: '95 g' },

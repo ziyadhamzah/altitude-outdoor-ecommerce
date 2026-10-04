@@ -44,15 +44,16 @@ export type StockTone = 'positive' | 'warning' | 'critical';
 
 export type StockState = {
   label: string;
+  detail: string;
   tone: StockTone;
   stock: number;
 };
 
 export const getStockState = (product: Product, selection: VariantSelection = {}): StockState => {
   const stock = getVariantStock(product, selection);
-  if (stock <= 0) return { label: 'OUT OF STOCK', tone: 'critical', stock };
-  if (stock <= 4) return { label: `ONLY ${stock} LEFT`, tone: 'warning', stock };
-  return { label: 'IN STOCK', tone: 'positive', stock };
+  if (stock <= 0) return { label: 'OUT OF STOCK', detail: 'Notify me when back', tone: 'critical', stock };
+  if (stock <= 4) return { label: 'LOW STOCK', detail: `${stock} available`, tone: 'warning', stock };
+  return { label: 'IN STOCK', detail: `${stock} available`, tone: 'positive', stock };
 };
 
 export type CatalogQuery = {

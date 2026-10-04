@@ -29,6 +29,8 @@ export type Product = {
   price: number;
   images: string[];
   description: string;
+  /** Short editorial lines describing why the piece earns its place in a pack. */
+  features?: string[];
   stock: number;
   rating: number;
   reviews: number;

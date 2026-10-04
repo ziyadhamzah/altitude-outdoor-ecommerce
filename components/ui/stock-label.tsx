@@ -15,20 +15,22 @@ const TONE_DOT: Record<StockTone, string> = {
 
 type StockLabelProps = {
   label: string;
+  detail?: string;
   tone: StockTone;
   className?: string;
 };
 
 /** Technical stock readout: mono label with a small square marker, no icons. */
-export const StockLabel = ({ label, tone, className }: StockLabelProps) => (
+export const StockLabel = ({ label, detail, tone, className }: StockLabelProps) => (
   <p
     className={cn(
-      'flex items-center gap-2 font-mono text-[0.6875rem] tracking-[0.18em] uppercase',
+      'flex flex-wrap items-center gap-x-2 font-mono text-[0.6875rem] tracking-[0.18em] uppercase',
       TONE_CLASSES[tone],
       className,
     )}
   >
     <span aria-hidden className={cn('h-1.5 w-1.5', TONE_DOT[tone])} />
     {label}
+    {detail ? <span className="text-muted">{detail}</span> : null}
   </p>
 );

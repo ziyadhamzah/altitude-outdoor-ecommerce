@@ -5,8 +5,9 @@ const idrFormatter = new Intl.NumberFormat('id-ID', {
   maximumFractionDigits: 0,
 });
 
-/** Formats 1899000 as "Rp1.899.000". */
-export const formatIDR = (value: number): string => idrFormatter.format(value).replace(/\s/g, '');
+/** Formats 1899000 as "Rp 1.899.000". */
+export const formatIDR = (value: number): string =>
+  idrFormatter.format(value).replace(/\u00a0/g, ' ');
 
 export const formatNumber = (value: number): string =>
   new Intl.NumberFormat('en-US').format(value);

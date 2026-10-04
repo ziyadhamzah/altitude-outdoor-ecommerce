@@ -1,43 +1,81 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { QuantitySelector } from '@/components/ui/quantity-selector';
 import { StockLabel } from '@/components/ui/stock-label';
-import { getVariantStock, getStockState, isVariantSelectionComplete } from '@/lib/catalog';
+import {
+  formatVariantLabel,
+  getStockState,
+  getVariantStock,
+  isVariantSelectionComplete,
+} from '@/lib/catalog';
 import { cn } from '@/lib/cn';
 import { useCartStore } from '@/store/cart';
 import { useWishlistStore } from '@/store/wishlist';
 import type { Product, VariantSelection } from '@/types/product';
 
+const ADDED_RESET_MS = 2000;
+
 type PurchasePanelProps = {
   product: Product;
 };
 
+type Feedback = { tone: 'added' | 'error'; message: string } | null;
+
+const joinList = (items: string[]): string =>
+  items.length <= 1
+    ? (items[0] ?? '')
+    : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+
 export const PurchasePanel = ({ product }: PurchasePanelProps) => {
   const [selection, setSelection] = useState<VariantSelection>({});
   const [quantity, setQuantity] = useState(1);
-  const [feedback, setFeedback] = useState<'idle' | 'added' | 'needs-variant'>('idle');
+  const [feedback, setFeedback] = useState<Feedback>(null);
 
   const addItem = useCartStore((state) => state.addItem);
   const wishlistIds = useWishlistStore((state) => state.productIds);
   const toggleWishlist = useWishlistStore((state) => state.toggle);
 
+  const timer = useRef<number | null>(null);
+
+  useEffect(
+    () => () => {
+      if (timer.current) window.clearTimeout(timer.current);
+    },
+    [],
+  );
+
   const complete = isVariantSelectionComplete(product, selection);
   const stock = useMemo(() => getVariantStock(product, selection), [product, selection]);
   const stockState = getStockState(product, selection);
   const wished = wishlistIds.includes(product.id);
+  const variantLabel = formatVariantLabel(product, selection);
 
-  const maxQuantity = Math.max(1, stock);
+  const requirements = (product.variants ?? []).map((variant) => `a ${variant.name.toLowerCase()}`);
+  const selectionPrompt = `Please select ${joinList(requirements)}.`;
 
   const onAdd = () => {
     if (!complete) {
-      setFeedback('needs-variant');
+      setFeedback({ tone: 'error', message: selectionPrompt });
       return;
     }
-    if (stock <= 0) return;
+
+    if (stock <= 0) {
+      setFeedback({ tone: 'error', message: 'This piece is currently out of stock.' });
+      return;
+    }
+
     addItem({ productId: product.id, quantity, variant: selection });
-    setFeedback('added');
+    setFeedback({ tone: 'added', message: `${product.name} added to cart.` });
+
+    if (timer.current) window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setFeedback(null), ADDED_RESET_MS);
+  };
+
+  const selectOption = (name: string, option: string) => {
+    setSelection((current) => ({ ...current, [name]: option }));
+    setFeedback(null);
   };
 
   return (
@@ -54,16 +92,13 @@ export const PurchasePanel = ({ product }: PurchasePanelProps) => {
             {variant.options.map((option) => {
               const isSelected = selection[variant.name] === option;
               const optionStock = getVariantStock(product, { [variant.name]: option });
-              const unavailable = optionStock <= 0 && variant.name !== 'Size';
+              const unavailable = optionStock <= 0 && variant.name === 'Size';
 
               return (
                 <button
                   key={option}
                   type="button"
-                  onClick={() => {
-                    setSelection((current) => ({ ...current, [variant.name]: option }));
-                    setFeedback('idle');
-                  }}
+                  onClick={() => selectOption(variant.name, option)}
                   disabled={unavailable}
                   aria-pressed={isSelected}
                   className={cn(
@@ -85,40 +120,45 @@ export const PurchasePanel = ({ product }: PurchasePanelProps) => {
       <div className="flex flex-wrap items-end gap-6">
         <QuantitySelector
           value={quantity}
-          max={maxQuantity}
+          max={Math.max(1, stock)}
           onChange={(value) => {
             setQuantity(value);
-            setFeedback('idle');
+            setFeedback(null);
           }}
         />
-        <StockLabel label={stockState.label} tone={stockState.tone} className="pb-3.5" />
+        <StockLabel
+          label={stockState.label}
+          detail={stockState.detail}
+          tone={stockState.tone}
+          className="pb-3.5"
+        />
       </div>
 
       <div className="mt-8 flex flex-col gap-3">
-        <button
-          type="button"
-          onClick={onAdd}
-          disabled={stock <= 0}
-          className="btn btn-dark w-full"
-        >
-          {stock <= 0 ? 'Out of stock' : 'Add to cart'}
+        <button type="button" onClick={onAdd} disabled={stock <= 0} className="btn btn-dark w-full">
+          {stock <= 0 ? 'Out of stock' : feedback?.tone === 'added' ? 'Added' : 'Add to cart'}
         </button>
 
-        <button
-          type="button"
-          onClick={() => toggleWishlist(product.id)}
-          className="btn btn-outline w-full"
-        >
+        <button type="button" onClick={() => toggleWishlist(product.id)} className="btn btn-outline w-full">
           {wished ? 'Remove from wishlist' : 'Add to wishlist'}
         </button>
       </div>
 
-      <p aria-live="polite" className="mt-4 min-h-5 font-mono text-[0.6875rem] tracking-[0.16em] uppercase">
-        {feedback === 'added' ? (
-          <span className="text-positive">Added to cart</span>
+      <p
+        aria-live="polite"
+        className="mt-4 min-h-5 font-mono text-[0.6875rem] tracking-[0.16em] uppercase"
+      >
+        {feedback?.tone === 'added' ? (
+          <span className="text-positive">{feedback.message}</span>
         ) : null}
-        {feedback === 'needs-variant' ? (
-          <span className="text-critical">Select {product.variants?.map((v) => v.name.toLowerCase()).join(' and ')} first</span>
+        {feedback?.tone === 'error' ? (
+          <span className="text-critical">{feedback.message}</span>
+        ) : null}
+        {!feedback && variantLabel ? (
+          <span className="text-muted">
+            {variantLabel}
+            {quantity > 1 ? ` · ${quantity} units` : ''}
+          </span>
         ) : null}
       </p>
     </div>
