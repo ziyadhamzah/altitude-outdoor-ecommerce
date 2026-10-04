@@ -3,6 +3,9 @@ export const BRAND = {
   tagline: 'GEAR FOR A HIGHER JOURNEY',
   niche: 'Premium Outdoor & Adventure Gear',
   city: 'Bandung, Indonesia',
+  email: 'orders@altitude.kit',
+  phone: '+62 22 4260 8812',
+  address: 'Jl. Cikutra Raya No. 21, Bandung 40124, Indonesia',
 } as const;
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
@@ -37,15 +40,21 @@ export const FOOTER_COLUMNS: { title: string; links: NavItem[] }[] = [
     links: [
       { label: 'OUR STORY', href: '/collections' },
       { label: 'JOURNAL', href: '/journal' },
-      { label: 'SHIPPING & RETURNS', href: '/shipping' },
+    ],
+  },
+  {
+    title: 'SAVED',
+    links: [
+      { label: 'WISHLIST', href: '/wishlist' },
+      { label: 'CART', href: '/cart' },
     ],
   },
   {
     title: 'SUPPORT',
     links: [
-      { label: 'ORDER TRACKING', href: '/tracking' },
-      { label: 'SIZE GUIDE', href: '/shop' },
-      { label: 'CONTACT', href: '/contact' },
+      { label: 'SHIPPING', href: '/info#shipping' },
+      { label: 'RETURNS', href: '/info#returns' },
+      { label: 'CONTACT', href: '/info#contact' },
     ],
   },
 ];

@@ -295,6 +295,62 @@
   }
 }
 
+@keyframes hero-zoom {
+  from {
+    transform: scale(1.09);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes hero-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes hero-copy {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@layer components {
+  /* Hero copy: fade + rise on every slide change */
+  .hero-copy {
+    animation: hero-copy 0.8s var(--ease-altitude) both;
+  }
+
+  /* Cinematic hero: slow push-in on the active slide image */
+  .hero-zoom {
+    animation: hero-zoom 8s var(--ease-altitude) forwards;
+  }
+
+  /* Autoplay progress hairline */
+  .hero-progress {
+    animation: hero-progress 6.5s linear forwards;
+  }
+
+  /* Horizontal scroll rail without a visible scrollbar */
+  .rail {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .rail::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

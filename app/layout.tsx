@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono, Space_Grotesk } from 'next/font/google';
 
+import { Footer } from '@/components/layout/footer';
+import { Navbar } from '@/components/layout/navbar';
+import { StoreHydrator } from '@/components/layout/store-hydrator';
 import { BRAND, SITE_DESCRIPTION, SITE_URL } from '@/data/site';
 
 import './globals.css';
@@ -67,7 +70,12 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       lang="en"
       className={`${spaceGrotesk.variable} ${inter.variable} ${jetBrainsMono.variable} antialiased`}
     >
-      <body className="flex min-h-dvh flex-col bg-offwhite text-ink">{children}</body>
+      <body className="flex min-h-dvh flex-col bg-offwhite text-ink">
+        <StoreHydrator />
+        <Navbar />
+        <main className="flex-1">{children}</main>
+        <Footer />
+      </body>
     </html>
   );
 }
