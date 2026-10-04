@@ -1,5 +1,9 @@
+import { SEARCH_KEYWORDS } from '@/data/search';
 import {
   CATEGORY_LABELS,
+  PRICE_RANGES,
+  type PriceRange,
+  type PriceRangeId,
   type Product,
   type ProductCategory,
   type SortId,
@@ -60,18 +64,22 @@ export type CatalogQuery = {
 };
 
 const matchesQuery = (product: Product, query: string): boolean => {
-  const needle = query.trim().toLowerCase();
-  if (!needle) return true;
-  return [
+  const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return true;
+
+  const haystack = [
     product.name,
     product.category,
     CATEGORY_LABELS[product.category],
     product.description,
     product.material,
+    ...product.specs.map((spec) => `${spec.label} ${spec.value}`),
+    ...(SEARCH_KEYWORDS[product.slug] ?? []),
   ]
     .join(' ')
-    .toLowerCase()
-    .includes(needle);
+    .toLowerCase();
+
+  return tokens.every((token) => haystack.includes(token));
 };
 
 const sortProducts = (list: Product[], sort: SortId): Product[] => {
@@ -112,3 +120,11 @@ export const getPriceBounds = (list: Product[]): { min: number; max: number } =>
   const prices = list.map((product) => product.price);
   return { min: Math.min(...prices), max: Math.max(...prices) };
 };
+
+export const DEFAULT_PRICE_RANGE: PriceRange = PRICE_RANGES[0];
+
+export const getPriceRange = (id: string): PriceRange =>
+  PRICE_RANGES.find((range) => range.id === id) ?? DEFAULT_PRICE_RANGE;
+
+export const isPriceRangeId = (value: string): value is PriceRangeId =>
+  PRICE_RANGES.some((range) => range.id === value);
