@@ -2,7 +2,23 @@ import type { VariantSelection } from './product';
 
 export type ShippingMethodId = 'regular' | 'express' | 'sameday';
 
-export type PaymentMethodId = 'bank_transfer' | 'virtual_account' | 'e_wallet' | 'qris' | 'cod';
+export const PAYMENT_METHODS = [
+  'bank_transfer',
+  'virtual_account',
+  'e_wallet',
+  'qris',
+  'cod',
+] as const;
+
+export type PaymentMethodId = (typeof PAYMENT_METHODS)[number];
+
+export const PAYMENT_METHOD_LABELS: Record<PaymentMethodId, string> = {
+  bank_transfer: 'Bank Transfer',
+  virtual_account: 'Virtual Account',
+  e_wallet: 'E-Wallet',
+  qris: 'QRIS',
+  cod: 'Cash on Delivery',
+};
 
 export type OrderStatus =
   | 'created'
@@ -28,7 +44,6 @@ export type ShippingOption = {
   cost: number;
   estimate: string;
   detail: string;
-  /** Minimum and maximum business days until delivery. Same day is [0, 0]. */
   etaDays: [number, number];
 };
 
@@ -62,6 +77,7 @@ export type OrderItem = {
   price: number;
   quantity: number;
   variant?: VariantSelection;
+  category?: string;
 };
 
 export type Order = {
