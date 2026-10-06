@@ -80,6 +80,9 @@ export type OrderItem = {
   category?: string;
 };
 
+/** ISO timestamps per status, filled in as the demo order progresses. */
+export type OrderTracking = Partial<Record<OrderStatus, string>>;
+
 export type Order = {
   id: string;
   items: OrderItem[];
@@ -92,6 +95,7 @@ export type Order = {
   status: OrderStatus;
   createdAt: string;
   estimatedDelivery: string;
+  tracking: OrderTracking;
 };
 
 export const ORDER_STATUS_FLOW: { status: OrderStatus; label: string; detail: string }[] = [

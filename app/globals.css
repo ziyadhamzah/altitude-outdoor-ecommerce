@@ -254,8 +254,19 @@
     border-color: var(--color-charcoal);
   }
 
+  /* Restore the ring for keyboard users: the bare border-colour change is too
+     weak on its own, and an invalid field keeps the critical border. */
+  .field:focus-visible {
+    outline: 2px solid var(--color-bronze);
+    outline-offset: 2px;
+  }
+
   .field[aria-invalid="true"] {
     border-color: var(--color-critical);
+  }
+
+  .field[aria-invalid="true"]:focus-visible {
+    outline-color: var(--color-critical);
   }
 
   .field-label {

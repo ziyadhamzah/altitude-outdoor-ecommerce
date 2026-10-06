@@ -74,7 +74,11 @@ export const PurchasePanel = ({ product }: PurchasePanelProps) => {
   };
 
   const selectOption = (name: string, option: string) => {
+    // Functional updates: two option clicks batched into one render must both
+    // apply, so each step reads the queued selection instead of the snapshot.
     setSelection((current) => ({ ...current, [name]: option }));
+    // Switching to a smaller size must not leave an unbuyable quantity selected.
+    setQuantity((current) => Math.min(current, Math.max(1, getVariantStock(product, { ...selection, [name]: option }))));
     setFeedback(null);
   };
 

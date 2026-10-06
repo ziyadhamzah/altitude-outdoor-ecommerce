@@ -37,14 +37,15 @@ export const ProductCard = ({
       </span>
     </div>
 
-    <div className="mt-5 flex items-start justify-between gap-4">
-      <div>
+    {/* Wraps so a long product name can never push the card past the grid track. */}
+    <div className="mt-5 flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
+      <div className="min-w-0">
         <p className="alt-eyebrow alt-eyebrow-bronze">{CATEGORY_LABELS[product.category]}</p>
         <h3 className="mt-2 text-lg leading-snug transition-opacity duration-300 group-hover:opacity-70">
           {product.name}
         </h3>
       </div>
-      <p className="shrink-0 font-mono text-sm whitespace-nowrap">{formatIDR(product.price)}</p>
+      <p className="ml-auto shrink-0 font-mono text-sm whitespace-nowrap">{formatIDR(product.price)}</p>
     </div>
   </Link>
 );

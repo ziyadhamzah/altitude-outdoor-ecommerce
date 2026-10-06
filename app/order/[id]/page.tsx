@@ -1,45 +1,35 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useParams } from 'next/navigation';
 
-import { formatIDR } from '@/lib/format';
-import { useHydrated } from '@/lib/use-hydrated';
-import type { Order, PaymentMethodId } from '@/types/order';
-import { PAYMENT_METHOD_LABELS } from '@/types/order';
+import { getPaymentMethod } from '@/data/payment';
+import { cn } from '@/lib/cn';
+import { formatDateTime, formatIDR } from '@/lib/format';
+import { useOrder } from '@/lib/use-order';
+import type { Order, OrderStatus, PaymentStatus } from '@/types/order';
+import { ORDER_STATUS_FLOW } from '@/types/order';
 
 const STEPS = ['CART', 'INFORMATION', 'SHIPPING', 'PAYMENT'] as const;
 
-function readOrder(id: string | undefined | string[]): Order | null {
-  if (!id || Array.isArray(id)) return null;
-  try {
-    const raw = localStorage.getItem('altitude-orders');
-    if (!raw) return null;
-    const list = JSON.parse(raw) as Order[];
-    return list.find((o) => o.id === id) || null;
-  } catch {
-    return null;
-  }
-}
+const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
+  unpaid: 'PENDING',
+  paid: 'PAID',
+  failed: 'FAILED',
+};
+
+const statusLabel = (status: OrderStatus): string =>
+  ORDER_STATUS_FLOW.find((step) => step.status === status)?.label ?? status.toUpperCase();
+
+/** Created and paid orders read as confirmed; anything before that is still in progress. */
+const isConfirmed = (order: Order): boolean =>
+  order.status !== 'created' && order.status !== 'paid';
 
 export default function OrderPage() {
   const params = useParams<{ id: string }>();
-  const router = useRouter();
-  const hydrated = useHydrated();
-  const id = params?.id;
-  const [order, setOrder] = useState<Order | null>(null);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    const o = readOrder(id);
-    if (!o) {
-      router.replace('/shop');
-      return;
-    }
-    setOrder(o);
-  }, [hydrated, id, router]);
+  const id = typeof params?.id === 'string' ? params.id : undefined;
+  const { order, hydrated } = useOrder(id);
 
   if (!hydrated) {
     return (
@@ -68,7 +58,10 @@ export default function OrderPage() {
     );
   }
 
-  const pm = (order.payment?.method) as PaymentMethodId | undefined;
+  const payment = order.payment;
+  const paymentMethod = getPaymentMethod(payment?.method ?? '');
+  const paymentPaid = payment?.status === 'paid';
+  const confirmed = isConfirmed(order);
 
   return (
     <div className="alt-container pt-28 pb-20 md:pt-36 md:pb-28">
@@ -161,19 +154,35 @@ export default function OrderPage() {
               </div>
               <div className="flex items-baseline justify-between gap-6 border-b border-line py-3">
                 <dt className="font-mono text-[0.6875rem] tracking-[0.16em] text-muted uppercase">Payment method</dt>
-                <dd className="text-sm">{pm ? PAYMENT_METHOD_LABELS[pm] : ''}</dd>
+                <dd className="text-sm">{payment?.label ?? paymentMethod.label}</dd>
               </div>
+              {payment?.reference ? (
+                <div className="flex items-baseline justify-between gap-6 border-b border-line py-3">
+                  <dt className="font-mono text-[0.6875rem] tracking-[0.16em] text-muted uppercase">Payment reference</dt>
+                  <dd className="font-mono text-sm tracking-[0.12em]">{payment.reference}</dd>
+                </div>
+              ) : null}
               <div className="flex items-baseline justify-between gap-6 border-b border-line py-3">
                 <dt className="font-mono text-[0.6875rem] tracking-[0.16em] text-muted uppercase">Payment status</dt>
-                <dd className="font-mono text-[0.6875rem] tracking-[0.18em] uppercase text-positive">PAID</dd>
+                <dd className={cn('font-mono text-[0.6875rem] tracking-[0.18em] uppercase', paymentPaid ? 'text-positive' : 'text-bronze')}>
+                  {payment?.status ? PAYMENT_STATUS_LABELS[payment.status] : PAYMENT_STATUS_LABELS.unpaid}
+                </dd>
               </div>
+              {payment?.paidAt ? (
+                <div className="flex items-baseline justify-between gap-6 border-b border-line py-3">
+                  <dt className="font-mono text-[0.6875rem] tracking-[0.16em] text-muted uppercase">Paid at</dt>
+                  <dd className="text-sm">{formatDateTime(payment.paidAt)}</dd>
+                </div>
+              ) : null}
               <div className="flex items-baseline justify-between gap-6 border-b border-line py-3">
                 <dt className="font-mono text-[0.6875rem] tracking-[0.16em] text-muted uppercase">Order status</dt>
-                <dd className="font-mono text-[0.6875rem] tracking-[0.18em] uppercase text-positive">PAID</dd>
+                <dd className={cn('font-mono text-[0.6875rem] tracking-[0.18em] uppercase', confirmed ? 'text-positive' : 'text-bronze')}>
+                  {statusLabel(order.status)}
+                </dd>
               </div>
               <div className="flex items-baseline justify-between gap-6 border-b border-line py-3">
                 <dt className="font-mono text-[0.6875rem] tracking-[0.16em] text-muted uppercase">Order date</dt>
-                <dd className="text-sm">{new Date(order.createdAt).toLocaleString('en-GB')}</dd>
+                <dd className="text-sm">{formatDateTime(order.createdAt)}</dd>
               </div>
               {order.estimatedDelivery && (
                 <div className="flex items-baseline justify-between gap-6 border-b border-line py-3">
@@ -182,11 +191,17 @@ export default function OrderPage() {
                 </div>
               )}
             </dl>
+            <p className="mt-5 max-w-lg border border-line bg-white p-4 text-sm text-muted">
+              {paymentMethod.instructions}
+            </p>
           </section>
 
           <div className="flex flex-wrap gap-3">
             <Link href={`/tracking/${order.id}`} className="btn btn-dark">
               Track order
+            </Link>
+            <Link href="/orders" className="btn btn-outline">
+              Order history
             </Link>
             <Link href="/shop" className="btn btn-outline">
               Continue shopping

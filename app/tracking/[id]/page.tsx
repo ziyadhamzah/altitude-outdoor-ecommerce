@@ -1,96 +1,34 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 
-import { formatIDR } from '@/lib/format';
-import { useHydrated } from '@/lib/use-hydrated';
-import type { Order, OrderStatus } from '@/types/order';
+import { cn } from '@/lib/cn';
+import { formatDateTime, formatIDR } from '@/lib/format';
+import { advanceOrder } from '@/lib/orders';
+import { useOrder } from '@/lib/use-order';
+import type { OrderStatus, OrderTracking } from '@/types/order';
+import { ORDER_STATUS_FLOW } from '@/types/order';
 
 const ORDER_STATUSES: OrderStatus[] = ['created', 'paid', 'processing', 'shipped', 'transit', 'delivered'];
-
-const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
-  created: 'ORDER CREATED',
-  paid: 'PAYMENT CONFIRMED',
-  processing: 'PROCESSING',
-  shipped: 'HANDED TO COURIER',
-  transit: 'IN TRANSIT',
-  delivered: 'DELIVERED',
-};
-
-const ORDER_STATUS_DESCRIPTIONS: Record<OrderStatus, string> = {
-  created: 'Your order has been created.',
-  paid: 'Payment has been confirmed.',
-  processing: 'Your order is being prepared.',
-  shipped: 'Your order has been handed to the courier.',
-  transit: 'Your order is in transit.',
-  delivered: 'Your order has been delivered.',
-};
 
 function getStatusIndex(s: OrderStatus | undefined) {
   if (!s) return -1;
   return ORDER_STATUSES.indexOf(s);
 }
 
-function nextStatus(s: OrderStatus): OrderStatus {
-  const i = ORDER_STATUSES.indexOf(s);
-  if (i < 0) return 'paid';
-  if (i >= ORDER_STATUSES.length - 1) return s;
-  return ORDER_STATUSES[i + 1];
-}
-
-function readOrders(): Order[] {
-  try {
-    const raw = localStorage.getItem('altitude-orders');
-    if (!raw) return [];
-    return JSON.parse(raw) as Order[];
-  } catch {
-    return [];
-  }
-}
-
-function writeOrders(list: Order[]) {
-  localStorage.setItem('altitude-orders', JSON.stringify(list.slice(0, 50)));
+function getStep(status: OrderStatus) {
+  return ORDER_STATUS_FLOW.find((step) => step.status === status);
 }
 
 export default function TrackingPage() {
   const params = useParams<{ id: string }>();
-  const router = useRouter();
-  const hydrated = useHydrated();
-  const id = params?.id;
-  const [order, setOrder] = useState<Order | null>(null);
+  const id = typeof params?.id === 'string' ? params.id : undefined;
+  const { order, hydrated } = useOrder(id);
 
-  useEffect(() => {
-    if (!hydrated) return;
-    const list = readOrders();
-    const o = id && !Array.isArray(id) ? list.find((x) => x.id === id) || null : null;
-    if (!o) {
-      router.replace('/shop');
-      return;
-    }
-    setOrder(o);
-  }, [hydrated, id, router]);
-
+  // advanceOrder writes to storage; useOrder picks the change up and re-renders.
   function advanceStatus() {
-    if (!order) return;
-    const ns = nextStatus(order.status);
-    if (ns === order.status) return;
-    const now = new Date().toISOString();
-    const list = readOrders();
-    const nextList = list.map((o) => {
-      if (o.id !== order.id) return o;
-      const t: any = (o as any).tracking || {};
-      if (ns === 'processing' && !t.processingAt) t.processingAt = now;
-      if (ns === 'shipped' && !t.shippedAt) t.shippedAt = now;
-      if (ns === 'transit' && !t.transitAt) t.transitAt = now;
-      if (ns === 'delivered' && !t.deliveredAt) t.deliveredAt = now;
-      if (ns === 'paid' && !t.paidAt && !(o as any).payment?.paidAt) t.paidAt = (o as any).payment?.paidAt || now;
-      return { ...o, status: ns, tracking: t };
-    });
-    writeOrders(nextList);
-    const updated = nextList.find((o) => o.id === order.id) || null;
-    setOrder(updated);
+    if (order) advanceOrder(order.id);
   }
 
   if (!hydrated) {
@@ -119,12 +57,12 @@ export default function TrackingPage() {
   const current = order.status;
   const idx = getStatusIndex(current);
   const canAdvance = idx < ORDER_STATUSES.length - 1;
-  const tracking: any = (order as any).tracking || {};
+  const currentStep = getStep(current);
+  const tracking: OrderTracking = order.tracking ?? {};
 
-  function ts(key: string) {
-    const v = tracking[key];
-    if (v) return new Date(v).toLocaleString('en-GB');
-    return null;
+  function ts(status: OrderStatus) {
+    const value = tracking[status];
+    return value ? formatDateTime(value) : null;
   }
 
   return (
@@ -139,8 +77,8 @@ export default function TrackingPage() {
         </div>
         <div className="mt-8 max-w-xl border border-line bg-white p-6">
           <p className="font-mono text-[0.6875rem] tracking-[0.22em] uppercase">Current status</p>
-          <p className="mt-3 text-xl">{ORDER_STATUS_LABELS[current]}</p>
-          <p className="mt-2 text-sm text-muted">{ORDER_STATUS_DESCRIPTIONS[current]}</p>
+          <p className="mt-3 text-xl">{currentStep?.label ?? current.toUpperCase()}</p>
+          <p className="mt-2 text-sm text-muted">{currentStep?.detail}</p>
         </div>
       </header>
 
@@ -149,23 +87,32 @@ export default function TrackingPage() {
           <section>
             <h2 className="font-mono text-[0.6875rem] tracking-[0.22em] uppercase">Tracking timeline</h2>
             <ol className="mt-6 space-y-6 border-l border-line pl-6">
-              {ORDER_STATUSES.map((s, i) => {
+              {ORDER_STATUS_FLOW.map((step, i) => {
                 const state = i < idx ? 'completed' : i === idx ? 'current' : 'upcoming';
+                const stamp = state === 'completed' ? ts(step.status) : null;
                 return (
-                  <li key={s} className="relative">
-                    <span className={`absolute -left-8 top-1.5 h-3 w-3 rounded-full border border-line ${state === 'completed' || state === 'current' ? 'bg-ink' : 'bg-white'}`} aria-hidden />
-                    <p className={`font-mono text-[0.6875rem] tracking-[0.2em] uppercase ${state === 'current' ? 'text-ink' : state === 'completed' ? 'text-ink' : 'text-muted'}`}>{ORDER_STATUS_LABELS[s]}</p>
-                    <p className="mt-1 text-sm text-muted">{ORDER_STATUS_DESCRIPTIONS[s]}</p>
-                    {state === 'completed' && (
+                  <li key={step.status} className="relative">
+                    <span
+                      aria-hidden
+                      className={cn(
+                        'absolute -left-8 top-1.5 h-3 w-3 rounded-full border border-line',
+                        state === 'upcoming' ? 'bg-white' : 'bg-ink',
+                      )}
+                    />
+                    <p
+                      className={cn(
+                        'font-mono text-[0.6875rem] tracking-[0.2em] uppercase',
+                        state === 'upcoming' ? 'text-muted' : 'text-ink',
+                      )}
+                    >
+                      {step.label}
+                    </p>
+                    <p className="mt-1 text-sm text-muted">{step.detail}</p>
+                    {stamp ? (
                       <p className="mt-2 font-mono text-[0.625rem] tracking-[0.14em] uppercase text-muted">
-                        {s === 'created' && (ts('createdAt') || new Date(order.createdAt).toLocaleString('en-GB'))}
-                        {s === 'paid' && (ts('paidAt') || ts('createdAt') || new Date(order.createdAt).toLocaleString('en-GB'))}
-                        {s === 'processing' && ts('processingAt')}
-                        {s === 'shipped' && ts('shippedAt')}
-                        {s === 'transit' && ts('transitAt')}
-                        {s === 'delivered' && ts('deliveredAt')}
+                        {stamp}
                       </p>
-                    )}
+                    ) : null}
                   </li>
                 );
               })}
@@ -194,6 +141,12 @@ export default function TrackingPage() {
               <div className="flex items-baseline justify-between gap-6 border-b border-line py-3">
                 <dt className="font-mono text-[0.6875rem] tracking-[0.16em] text-muted uppercase">Shipping cost</dt>
                 <dd className="font-mono text-sm">{formatIDR(order.shippingCost ?? order.shipping?.cost ?? 0)}</dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-6 border-b border-line py-3">
+                <dt className="font-mono text-[0.6875rem] tracking-[0.16em] text-muted uppercase">Payment status</dt>
+                <dd className={cn('font-mono text-[0.6875rem] tracking-[0.18em] uppercase', order.payment?.status === 'paid' ? 'text-positive' : 'text-bronze')}>
+                  {order.payment?.status === 'paid' ? 'PAID' : 'PENDING'}
+                </dd>
               </div>
               {order.estimatedDelivery && (
                 <div className="flex items-baseline justify-between gap-6 border-b border-line py-3">

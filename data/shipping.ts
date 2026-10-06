@@ -29,6 +29,16 @@ export const SHIPPING_OPTIONS: ShippingOption[] = [
 
 export const DEFAULT_SHIPPING_OPTION = SHIPPING_OPTIONS[0];
 
+/** Orders above this value ship free, as promised on the product and info pages. */
+export const FREE_SHIPPING_THRESHOLD = 1_500_000;
+
+export const qualifiesForFreeShipping = (subtotal: number): boolean =>
+  subtotal > FREE_SHIPPING_THRESHOLD;
+
+/** Shipping actually charged for a cart: free above the threshold. */
+export const getShippingCost = (option: ShippingOption, subtotal = 0): number =>
+  qualifiesForFreeShipping(subtotal) ? 0 : option.cost;
+
 export const getShippingOption = (id: string): ShippingOption =>
   SHIPPING_OPTIONS.find((option) => option.id === id) ?? DEFAULT_SHIPPING_OPTION;
 

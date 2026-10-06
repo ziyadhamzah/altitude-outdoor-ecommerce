@@ -47,6 +47,7 @@ export const FOOTER_COLUMNS: { title: string; links: NavItem[] }[] = [
     links: [
       { label: 'WISHLIST', href: '/wishlist' },
       { label: 'CART', href: '/cart' },
+      { label: 'ORDERS', href: '/orders' },
     ],
   },
   {

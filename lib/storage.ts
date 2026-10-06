@@ -39,5 +39,6 @@ export const STORAGE_KEYS = {
   cart: 'altitude.cart.v1',
   wishlist: 'altitude.wishlist.v1',
   orders: 'altitude.orders.v1',
+  checkout: 'altitude.checkout.v1',
   recentlyViewed: 'altitude.recently-viewed.v1',
 } as const;
